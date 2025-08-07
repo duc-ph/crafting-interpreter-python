@@ -1,17 +1,17 @@
 from typing import List
 from Environment import Environment
 from ErrorReporter import runtime_error
-from Expr import Assign, Binary, Expr, Grouping, Literal, Logical, Unary, ExprVisitor
-from Stmt import Block, Expression, If, Print, Stmt, StmtVisitor, Var
+import Expr
+import Stmt
 from TokenType import TokenType
 
 
-class Interpreter(ExprVisitor[object], StmtVisitor[object]):
+class Interpreter(Expr.Visitor[object], Stmt.Visitor[object]):
     def __init__(self):
         super().__init__()
         self.environment = Environment()
 
-    def interpret(self, statements: List[Stmt]) -> None:
+    def interpret(self, statements: List[Stmt.Stmt]) -> None:
         try:
             for statement in statements:
                 self.execute(statement)
@@ -19,10 +19,10 @@ class Interpreter(ExprVisitor[object], StmtVisitor[object]):
         except Exception as e:
             runtime_error(e)
 
-    def visit_literal_expr(self, expr: Literal) -> object:
+    def visit_literal_expr(self, expr: Expr.Literal) -> object:
         return expr.value
 
-    def visit_logical_expr(self, expr: Logical) -> object:
+    def visit_logical_expr(self, expr: Expr.Logical) -> object:
         left = self.evaluate(expr.left)
         if expr.operator.type == TokenType.OR:
             if self.is_truthy(left):
@@ -36,10 +36,10 @@ class Interpreter(ExprVisitor[object], StmtVisitor[object]):
         # unlike binary expr.
         return self.evaluate(expr.right)
 
-    def visit_grouping_expr(self, expr: Grouping) -> object:
+    def visit_grouping_expr(self, expr: Expr.Grouping) -> object:
         return self.evaluate(expr.expression)
 
-    def visit_unary_expr(self, expr: Unary) -> object:
+    def visit_unary_expr(self, expr: Expr.Unary) -> object:
         right = self.evaluate(expr.right)
         match expr.operator.type:
             case TokenType.MINUS:
@@ -52,7 +52,7 @@ class Interpreter(ExprVisitor[object], StmtVisitor[object]):
     def visit_variable_expr(self, expr) -> object:
         return self.environment.get(expr.name)
 
-    def visit_binary_expr(self, expr: Binary) -> object:
+    def visit_binary_expr(self, expr: Expr.Binary) -> object:
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
 
@@ -89,13 +89,13 @@ class Interpreter(ExprVisitor[object], StmtVisitor[object]):
             return obj
         return True
 
-    def evaluate(self, expr: Expr) -> object:
+    def evaluate(self, expr: Expr.Expr) -> object:
         return expr.accept(self)
 
-    def execute(self, stmt: Stmt):
+    def execute(self, stmt: Stmt.Stmt):
         stmt.accept(self)
 
-    def executeBlock(self, statements: List[Stmt], environment: Environment) -> None:
+    def executeBlock(self, statements: List[Stmt.Stmt], environment: Environment) -> None:
         previous_env = self.environment
         try:
             self.environment = environment
@@ -104,25 +104,25 @@ class Interpreter(ExprVisitor[object], StmtVisitor[object]):
         finally:  # restore the previous env after execution, even if there is exception
             self.environment = previous_env
 
-    def visit_block_stmt(self, stmt: Block) -> None:
+    def visit_block_stmt(self, stmt: Stmt.Block) -> None:
         self.executeBlock(stmt.statements, Environment(
             enclosing=self.environment))
         return
 
-    def visit_expression_stmt(self, stmt: Expression) -> None:
+    def visit_expression_stmt(self, stmt: Stmt.Expr) -> None:
         self.evaluate(stmt.expression)
 
-    def visit_if_stmt(self, stmt: If) -> None:
+    def visit_if_stmt(self, stmt: Stmt.If) -> None:
         if self.is_truthy(self.evaluate(stmt.condition)):
             self.execute(stmt.thenBranch)
         elif stmt.elseBranch:
             self.execute(stmt.elseBranch)
 
-    def visit_print_stmt(self, stmt: Print) -> None:
+    def visit_print_stmt(self, stmt: Stmt.Print) -> None:
         value = self.evaluate(stmt.expresssion)
         print(self.stringify(value))
 
-    def visit_var_stmt(self, stmt: Var) -> None:
+    def visit_var_stmt(self, stmt: Stmt.Var) -> None:
         value = None
         if stmt.initializer is not None:
             value = self.evaluate(stmt.initializer)
@@ -132,7 +132,7 @@ class Interpreter(ExprVisitor[object], StmtVisitor[object]):
         while self.is_truthy(self.evaluate(stmt.condition)):
             self.execute(stmt.body)
 
-    def visit_assign_expr(self, expr: Assign) -> object:
+    def visit_assign_expr(self, expr: Expr.Assign) -> object:
         value = self.evaluate(expr.value)
         self.environment.assign(expr.name, value)
         return value

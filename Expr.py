@@ -6,10 +6,10 @@ R = TypeVar('R')
 
 class Expr(ABC):
     @abstractmethod
-    def accept(self, visitor: 'ExprVisitor[R]') -> R:
+    def accept(self, visitor: 'Visitor[R]') -> R:
         pass
 
-class ExprVisitor(Generic[R], ABC):
+class Visitor(Generic[R], ABC):
     @abstractmethod
     def visit_assign_expr(self, expr: 'Assign') -> R:
         pass
@@ -37,7 +37,7 @@ class Assign(Expr):
     name: Token
     value: Expr
 
-    def accept(self, visitor: 'ExprVisitor[R]') -> R:
+    def accept(self, visitor: 'Visitor[R]') -> R:
         return visitor.visit_assign_expr(self)
 
 @dataclass
@@ -46,21 +46,21 @@ class Binary(Expr):
     operator: Token
     right: Expr
 
-    def accept(self, visitor: 'ExprVisitor[R]') -> R:
+    def accept(self, visitor: 'Visitor[R]') -> R:
         return visitor.visit_binary_expr(self)
 
 @dataclass
 class Grouping(Expr):
     expression: Expr
 
-    def accept(self, visitor: 'ExprVisitor[R]') -> R:
+    def accept(self, visitor: 'Visitor[R]') -> R:
         return visitor.visit_grouping_expr(self)
 
 @dataclass
 class Literal(Expr):
     value: Any
 
-    def accept(self, visitor: 'ExprVisitor[R]') -> R:
+    def accept(self, visitor: 'Visitor[R]') -> R:
         return visitor.visit_literal_expr(self)
 
 @dataclass
@@ -69,7 +69,7 @@ class Logical(Expr):
     operator: Token
     right: Expr
 
-    def accept(self, visitor: 'ExprVisitor[R]') -> R:
+    def accept(self, visitor: 'Visitor[R]') -> R:
         return visitor.visit_logical_expr(self)
 
 @dataclass
@@ -77,13 +77,13 @@ class Unary(Expr):
     operator: Token
     right: Expr
 
-    def accept(self, visitor: 'ExprVisitor[R]') -> R:
+    def accept(self, visitor: 'Visitor[R]') -> R:
         return visitor.visit_unary_expr(self)
 
 @dataclass
 class Variable(Expr):
     name: Token
 
-    def accept(self, visitor: 'ExprVisitor[R]') -> R:
+    def accept(self, visitor: 'Visitor[R]') -> R:
         return visitor.visit_variable_expr(self)
 

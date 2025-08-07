@@ -19,11 +19,11 @@ def define_ast(output_dir: str, base_name: str, types: List[str]):
         f.write(f"class {base_name}(ABC):\n")
         f.write("    @abstractmethod\n")
         f.write(
-            f"    def accept(self, visitor: '{base_name}Visitor[R]') -> R:\n")
+            "    def accept(self, visitor: 'Visitor[R]') -> R:\n")
         f.write("        pass\n\n")
 
         # Visitor abstract base class
-        f.write(f"class {base_name}Visitor(Generic[R], ABC):\n")
+        f.write("class Visitor(Generic[R], ABC):\n")
         for type_def in types:
             class_name = type_def.split(":")[0].strip()
             f.write(f"    @abstractmethod\n")
@@ -46,7 +46,7 @@ def define_ast(output_dir: str, base_name: str, types: List[str]):
 
             f.write("\n")
             f.write(
-                f"    def accept(self, visitor: '{base_name}Visitor[R]') -> R:\n")
+                "    def accept(self, visitor: 'Visitor[R]') -> R:\n")
             f.write(
                 f"        return visitor.visit_{class_name.lower()}_{base_name.lower()}(self)\n\n")
 
