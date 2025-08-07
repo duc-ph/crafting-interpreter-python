@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+.env
+.venv/
+venv/
+pip-wheel-metadata/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.pnpm-debug.log*
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Test and coverage
+coverage/
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Compiled files
+*.o
+*.out
+*.class
+*.so
+*.exe
+
+# Docker
+*.pid
+*.pid.lock
+
+# Git
+*.orig
+
+# Virtual environments
+.env/
+.env.bak/
+.envrc
