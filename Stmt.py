@@ -19,10 +19,16 @@ class StmtVisitor(Generic[R], ABC):
     def visit_expression_stmt(self, stmt: 'Expression') -> R:
         pass
     @abstractmethod
+    def visit_if_stmt(self, stmt: 'If') -> R:
+        pass
+    @abstractmethod
     def visit_print_stmt(self, stmt: 'Print') -> R:
         pass
     @abstractmethod
     def visit_var_stmt(self, stmt: 'Var') -> R:
+        pass
+    @abstractmethod
+    def visit_while_stmt(self, stmt: 'While') -> R:
         pass
 
 @dataclass
@@ -40,6 +46,15 @@ class Expression(Stmt):
         return visitor.visit_expression_stmt(self)
 
 @dataclass
+class If(Stmt):
+    condition: Expr
+    thenBranch: Stmt
+    elseBranch: Stmt
+
+    def accept(self, visitor: 'StmtVisitor[R]') -> R:
+        return visitor.visit_if_stmt(self)
+
+@dataclass
 class Print(Stmt):
     expresssion: Expr
 
@@ -53,4 +68,12 @@ class Var(Stmt):
 
     def accept(self, visitor: 'StmtVisitor[R]') -> R:
         return visitor.visit_var_stmt(self)
+
+@dataclass
+class While(Stmt):
+    condition: Expr
+    body: Stmt
+
+    def accept(self, visitor: 'StmtVisitor[R]') -> R:
+        return visitor.visit_while_stmt(self)
 
