@@ -84,7 +84,7 @@ class Interpreter(ExprVisitor[object], StmtVisitor[object]):
     def executeBlock(self, statements: List[Stmt], environment: Environment) -> None:
         previous_env = self.environment
         try:
-            self.environment = previous_env
+            self.environment = environment
             for statement in statements:
                 self.execute(statement)
         finally: # restore the previous env after execution, even if there is exception

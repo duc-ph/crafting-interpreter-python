@@ -1,7 +1,7 @@
 from typing import List
-from ErrorReporter import error_at_line, error_at_token
+from ErrorReporter import error_at_token
 from Expr import Assign, Binary, Expr, Grouping, Literal, Unary, Variable
-from Stmt import Stmt, Print, Expression, Var
+from Stmt import Block, Stmt, Print, Expression, Var
 from Token import Token
 from TokenType import TokenType
 
@@ -39,7 +39,7 @@ class Parser:
             return self.printStatement()
 
         if self.match(TokenType.LEFT_BRACE):
-            return self.block()
+            return Block(self.block())
 
         return self.expressionStatement()
 
