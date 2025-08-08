@@ -23,11 +23,19 @@ class Visitor(Generic[R], ABC):
         pass
 
     @abstractmethod
+    def visit_function_stmt(self, stmt: 'Function') -> R:
+        pass
+
+    @abstractmethod
     def visit_if_stmt(self, stmt: 'If') -> R:
         pass
 
     @abstractmethod
     def visit_print_stmt(self, stmt: 'Print') -> R:
+        pass
+
+    @abstractmethod
+    def visit_return_stmt(self, stmt: 'Return') -> R:
         pass
 
     @abstractmethod
@@ -56,6 +64,16 @@ class Expression(Stmt):
 
 
 @dataclass
+class Function(Stmt):
+    name: Token
+    params: List[Token]
+    body: List[Stmt]
+
+    def accept(self, visitor: 'Visitor[R]') -> R:
+        return visitor.visit_function_stmt(self)
+
+
+@dataclass
 class If(Stmt):
     condition: Expr
     thenBranch: Stmt
@@ -71,6 +89,15 @@ class Print(Stmt):
 
     def accept(self, visitor: 'Visitor[R]') -> R:
         return visitor.visit_print_stmt(self)
+
+
+@dataclass
+class Return(Stmt):
+    keyword: Token
+    value: Expr
+
+    def accept(self, visitor: 'Visitor[R]') -> R:
+        return visitor.visit_return_stmt(self)
 
 
 @dataclass

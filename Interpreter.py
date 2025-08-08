@@ -1,15 +1,21 @@
+from Clock import Clock
+from Return import Return
 from typing import List
 from Environment import Environment
 from ErrorReporter import runtime_error
 import Expr
 import Stmt
 from TokenType import TokenType
+from LoxFunction import LoxFunction
+from LoxCallable import LoxCallable
 
 
 class Interpreter(Expr.Visitor[object], Stmt.Visitor[object]):
     def __init__(self):
         super().__init__()
-        self.environment = Environment()
+        self.globals = Environment()  # track the global env
+        self.environment = self.globals  # track the current env
+        self.globals.define('clock', Clock())
 
     def interpret(self, statements: List[Stmt.Stmt]) -> None:
         try:
@@ -82,6 +88,24 @@ class Interpreter(Expr.Visitor[object], Stmt.Visitor[object]):
 
         return None
 
+    def visit_call_expr(self, expr: Expr.Call) -> object:
+        callee = self.evaluate(expr.callee)
+        arguments = []
+        for arg in expr.arguments:
+            arguments.append(self.evaluate(arg))
+
+        if not isinstance(callee, LoxCallable):
+            raise RuntimeError(
+                expr.paren, "Can only call functions and classes.")
+
+        func = callee
+
+        if len(arguments) != func.arity():
+            raise RuntimeError(
+                expr.paren, f"Expected {func.arity()} arguments but got {len(arguments)}.")
+
+        return func.call(interpreter=self, arguments=arguments)
+
     def is_truthy(self, obj: object) -> bool:
         if obj == None:
             return False
@@ -112,6 +136,10 @@ class Interpreter(Expr.Visitor[object], Stmt.Visitor[object]):
     def visit_expression_stmt(self, stmt: Stmt.Expr) -> None:
         self.evaluate(stmt.expression)
 
+    def visit_function_stmt(self, stmt: Stmt.Function):
+        func = LoxFunction(stmt, self.environment)
+        self.environment.define(stmt.name.lexeme, func)
+
     def visit_if_stmt(self, stmt: Stmt.If) -> None:
         if self.is_truthy(self.evaluate(stmt.condition)):
             self.execute(stmt.thenBranch)
@@ -121,6 +149,13 @@ class Interpreter(Expr.Visitor[object], Stmt.Visitor[object]):
     def visit_print_stmt(self, stmt: Stmt.Print) -> None:
         value = self.evaluate(stmt.expresssion)
         print(self.stringify(value))
+    
+    def visit_return_stmt(self, stmt: Stmt.Return) -> None:
+        value = None
+        if stmt.value:
+            value = self.evaluate(stmt.value)
+        
+        raise Return(value)
 
     def visit_var_stmt(self, stmt: Stmt.Var) -> None:
         value = None
